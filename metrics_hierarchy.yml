@@ -1,0 +1,407 @@
+# Metrics graph (hierarchy) for alerting tool
+# Each metric has:
+#   name in snake case;
+#   description - short description of the metric;
+#   depends_on - list of parent metrics;
+#   formula - formula to calculate the metric;
+#   granularities - list of granularities (time intervals to group by);
+#     window_size - size of the sliding window for the metric;
+#     sigma_n - number of standard deviations for anomaly detection;
+#     slices - list of slices for the granularity (dimensions to group by).
+
+
+metrics:
+  - name: new_registered_users
+    description: "New registered users"
+    depends_on:
+      - new_visitors
+      - 1h_registration_rate
+    granularities:
+      - hour:
+          window_size: 168
+          sigma_n: 3
+          slices:
+            - platform:
+                - iOS
+                - Android
+                - web
+      - day:
+          window_size: 28
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+      - week:
+          window_size: 18
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+
+  - name: new_registered_users_10d_lag
+    description: "New registered users with 10 days lag"
+    granularities:
+      - hour:
+          window_size: 168
+          sigma_n: 3
+          slices:
+            - platform:
+                - iOS
+                - Android
+                - web
+      - day:
+          window_size: 28
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+      - week:
+          window_size: 18
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+
+  - name: new_registered_users_14d_lag
+    description: "New registered users with 14 days lag"
+    granularities:
+      - hour:
+          window_size: 168
+          sigma_n: 3
+          slices:
+            - platform:
+                - iOS
+                - Android
+                - web
+      - day:
+          window_size: 28
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+      - week:
+          window_size: 18
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+
+  - name: registered_during_1h
+    description: "Users who registered during 1 hour after visit"
+    depends_on:
+      - new_visitors
+      - 1h_registration_rate
+      - new_registered_users
+    granularities:
+      - hour:
+          window_size: 168
+          sigma_n: 3
+      - day:
+          window_size: 35
+          sigma_n: 3
+      - week:
+          window_size: 18
+          sigma_n: 3
+
+  - name: activated_during_1h
+    description: "Users who made subsmission during 1 hour after a registration"
+    depends_on:
+      - registered_during_1h
+      - 1h_activation_rate
+    granularities:
+      - hour:
+          window_size: 168
+          sigma_n: 3
+      - day:
+          window_size: 35
+          sigma_n: 3
+      - week:
+          window_size: 18
+          sigma_n: 3
+
+  - name: retained_during_2nd_week
+    description: "Users who retained during 2nd week after registration"
+    depends_on:
+      - new_registered_users_14d_lag
+      - 2nd_week_retention_rate
+    granularities:
+      - hour:
+          window_size: 168
+          sigma_n: 3
+          slices:
+            - platform:
+                - iOS
+                - Android
+                - web
+      - day:
+          window_size: 28
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+      - week:
+          window_size: 24
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+
+  - name: subscribed_during_10d
+    description: "Users who subscribed during 10 days after registration"
+    depends_on:
+      - new_registered_users_10d_lag
+    granularities:
+      - day:
+          window_size: 84
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - web
+      - week:
+          window_size: 24
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - web
+
+  - name: 10d_subscription_rate
+    description: "Probability of user to subscribe during 10 days after registration"
+    depends_on:
+      - new_registered_users_10d_lag
+      - subscribed_during_10d
+    formula: "subscribed_during_10d / new_registered_users_10d_lag"
+    granularities:
+      - day:
+          window_size: 84
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - web
+      - week:
+          window_size: 24
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - web
+
+  - name: 2nd_week_retention_rate
+    description: "Probability of user to retain during 2nd week after registration"
+    depends_on:
+      - new_registered_users_14d_lag
+      - retained_during_2nd_week
+    formula: "retained_during_2nd_week / new_registered_users_14d_lag"
+    granularities:
+      - hour:
+          window_size: 168
+          sigma_n: 3
+      - day:
+          window_size: 35
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+      - week:
+          window_size: 24
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+
+  - name: 1h_activation_rate
+    description: "Probability of user to make a submission during 1 hour after registration"
+    depends_on:
+      - registered_during_1h
+      - activated_during_1h
+    formula: "activated_during_1h / registered_during_1h"
+    granularities:
+      - hour:
+          window_size: 168
+          sigma_n: 3
+      - day:
+          window_size: 35
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+      - week:
+          window_size: 24
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - iOS
+                - Android
+                - web
+
+  - name: new_visitors
+    description: "New visitors"
+    granularities:
+      - hour:
+          window_size: 168
+          sigma_n: 3
+          slices:
+            - platform:
+                - iOS
+                - Android
+                - web
+      - day:
+          window_size: 35
+          sigma_n: 3
+          slices:
+            - platform:
+                - iOS
+                - Android
+                - web
+      - week:
+          window_size: 24
+          sigma_n: 3
+          slices:
+            - platform:
+                - iOS
+                - Android
+                - web
+
+  - name: new_visitors_1h_lag
+    description: "New visitors with 1 hour lag"
+    depends_on:
+      - new_visitors
+    granularities:
+      - hour:
+          window_size: 168
+          sigma_n: 3
+      - day:
+          window_size: 84
+          sigma_n: 3
+      - week:
+          window_size: 24
+          sigma_n: 3
+
+  - name: 1h_registration_rate
+    description: "Probability of new visitor to register during 1 hour after a visit"
+    depends_on:
+      - new_visitors_1h_lag
+      - registered_during_1h
+    formula: "registered_during_1h / new_visitors_1h_lag"
+    granularities:
+      - hour:
+          window_size: 72
+          sigma_n: 3
+      - day:
+          window_size: 40
+          sigma_n: 3
+      - week:
+          window_size: 12
+          sigma_n: 3
+
+  - name: new_subscribers
+    description: "New subscribers"
+    depends_on:
+      - new_registered_users_10d_lag
+      - subscribed_during_10d
+      - 10d_subscription_rate
+    granularities:
+      - day:
+          window_size: 35
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - web
+      - week:
+          window_size: 24
+          sigma_n: 3
+          slices:
+            - country:
+                - USA
+                - Germany
+                - Poland
+            - platform:
+                - web
