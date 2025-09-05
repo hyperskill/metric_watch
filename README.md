@@ -263,7 +263,7 @@ metric_watch/
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-**Copyright 2024 Hyperskill**  
+**Copyright 2025 Hyperskill**  
 **Author: Vladimir Klimov**
 
 Licensed under the Apache License, Version 2.0 (the "License");
